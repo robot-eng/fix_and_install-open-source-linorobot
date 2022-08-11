@@ -12,7 +12,7 @@ $ python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platform
 ```
 $ ln -s ~/.platformio/penv/bin/platformio ~/.local/bin/platformio
 ```
-- fix file install.sh
+- fix file install.sh in lino_install
 ```
 #!/usr/bin/env bash
 
