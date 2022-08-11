@@ -12,7 +12,12 @@ $ python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platform
 ```
 $ ln -s ~/.platformio/penv/bin/platformio ~/.local/bin/platformio
 ```
-- fix file install.sh in lino_install
+- fix file install.sh in lino_install command:
+```
+# sudo python2.7 -m pip install -U platformio
+# sudo rm -rf $HOME/.platformio/
+```
+- As follows
 ```
 #!/usr/bin/env bash
 
@@ -103,8 +108,8 @@ python-dev \
 build-essential
 
 sudo apt-get install python-pip
-sudo python2.7 -m pip install -U platformio
-sudo rm -rf $HOME/.platformio/
+#sudo python2.7 -m pip install -U platformio
+#sudo rm -rf $HOME/.platformio/
 
 source /opt/ros/$ROSDISTRO/setup.bash
 
@@ -255,3 +260,4 @@ echo
 $ cd $HOME/lino_install
 $ ./install.sh mecanum ydlidar
 ```
+file ydlidar is in folder fix
