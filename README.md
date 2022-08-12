@@ -266,8 +266,5 @@ echo
 $ cd $HOME/lino_install
 $ ./install.sh mecanum ydlidar
 ```
-<<<<<<< HEAD
 file ydlidar is in folder fix
-=======
-file ydlidar X2 in fix
->>>>>>> 405b4c2c85941b711492f75e6a32f3ecd3f5db1a
+
