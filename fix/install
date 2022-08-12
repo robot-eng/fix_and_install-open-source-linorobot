@@ -4,8 +4,7 @@ set -e
 
 source /opt/ros/$(dir /opt/ros)/setup.bash
 
-wget https://www.pjrc.com/teensy/00-teensy.rules
-sudo cp 00-teensy.rules /etc/udev/rules.d/
+sudo cp files/49-teensy.rules /etc/udev/rules.d/
 
 ROSDISTRO="$(rosversion -d)"
 BASE=$1
@@ -21,22 +20,6 @@ _  /_____/ /   _  /|  /  / /_/ / _  _, _/ / /_/ / _  /_/ / / /_/ / _  /
                     
                             http://linorobot.org                                                                          
 "
-echo
-echo "base The type of robot you want to build. Valid arguments are"
-echo " - 2wd"
-echo " - 4wd"
-echo " - ackermann"
-echo " - mecanum"
-echo "---------------------------------------------------------------"
-echo "The lidar you're going to use for your build. Valid arguments are"
-echo " - xv11"
-echo " - rplidar"
-echo " - ydlidar"
-echo " - ydlidarx2"
-echo " - hokuyo"
-echo " - kinect"
-echo " - realsense"
-echo
 if [ "$3" != "test" ]
     then
         if [ "$*" == "" ]
@@ -71,7 +54,6 @@ if [ "$3" != "test" ]
                 echo "rplidar"
                 echo "xv11"
                 echo "ydlidar"
-                echo "ydlidarx2"
                 echo
                 exit 1
         
@@ -102,12 +84,12 @@ avahi-daemon \
 openssh-server \
 python-setuptools \
 python-dev \
-build-essential \
-python-gudev
+build-essential
 
-sudo easy_install pip
-python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platformio/master/scripts/get-platformio.py)"
-ln -s ~/.platformio/penv/bin/platformio ~/.local/bin/platformio
+sudo apt-get install python-pip
+sudo python2.7 -m pip install -U platformio
+sudo rm -rf $HOME/.platformio/
+
 source /opt/ros/$ROSDISTRO/setup.bash
 
 cd $HOME
@@ -115,13 +97,26 @@ mkdir -p linorobot_ws/src
 cd $HOME/linorobot_ws/src
 catkin_init_workspace
 
+if [ $ROSDISTRO == "melodic" ]
+    then
+        git clone https://github.com/ros-perception/openslam_gmapping.git
+        
+else
+    sudo apt-get install -y \
+    python-gudev \
+    ros-$ROSDISTRO-gmapping \
+    ros-$ROSDISTRO-map-server
+fi
+
+cd $HOME/linorobot_ws/
+catkin_make
+source devel/setup.bash
+
 sudo apt-get install -y \
 ros-$ROSDISTRO-roslint \
 ros-$ROSDISTRO-rosserial \
 ros-$ROSDISTRO-rosserial-arduino \
 ros-$ROSDISTRO-imu-filter-madgwick \
-ros-$ROSDISTRO-gmapping \
-ros-$ROSDISTRO-map-server \
 ros-$ROSDISTRO-navigation \
 ros-$ROSDISTRO-robot-localization \
 ros-$ROSDISTRO-tf2 \
@@ -133,14 +128,23 @@ if [[ "$3" == "test" ]]
         ros-$ROSDISTRO-xv-11-laser-driver \
         ros-$ROSDISTRO-rplidar-ros \
         ros-$ROSDISTRO-urg-node \
-        ros-$ROSDISTRO-lms1xx \
-        ros-$ROSDISTRO-freenect-launch \
         ros-$ROSDISTRO-depthimage-to-laserscan \
         ros-$ROSDISTRO-teb-local-planner 
-
+#         ros-$ROSDISTRO-camera-info-manager \
+#         libusb-dev
+#         cd $HOME
+#         git clone https://github.com/OpenKinect/libfreenect.git    
+#         cd libfreenect    
+#         mkdir build   
+#         cd build    
+#         cmake -L ..    
+#         make
+#         sudo make install
+        
         cd $HOME/linorobot_ws/src
         git clone https://github.com/EAIBOT/ydlidar.git
-
+#         git clone https://github.com/ros-drivers/freenect_stack.git
+        git clone https://github.com/clearpathrobotics/lms1xx.git
 else
     if [[ "$SENSOR" == "hokuyo" ]]
         then
@@ -153,12 +157,23 @@ else
 
     elif [[ "$SENSOR" == "kinect" ]]
         then
-            sudo apt-get install -y ros-$ROSDISTRO-freenect-launch
-            sudo apt-get install -y ros-$ROSDISTRO-depthimage-to-laserscan
-            
+            cd $HOME/linorobot_ws/src
+            git clone https://github.com/ros-drivers/freenect_stack.git
+            sudo apt-get install -y \
+            ros-$ROSDISTRO-depthimage-to-laserscan \
+            ros-$ROSDISTRO-camera-info-manager     
+            git clone https://github.com/OpenKinect/libfreenect.git    
+            cd libfreenect    
+            mkdir build   
+            cd build    
+            cmake -L ..    
+            make
+            sudo make install
+          
     elif [[ "$SENSOR" == "lms1xx" ]]
         then
-            sudo apt-get install -y ros-$ROSDISTRO-lms1xx
+            cd $HOME/linorobot_ws/src
+            git clone https://github.com/clearpathrobotics/lms1xx.git
             echo ""
             echo -n "Input your LMS1xx IP: "
             read lms1xxip
@@ -181,10 +196,6 @@ else
         then
             cd $HOME/linorobot_ws/src
             git clone https://github.com/EAIBOT/ydlidar.git
-    elif [[ "$SENSOR" == "ydlidarx2" ]]
-        then
-            cd $HOME/linorobot_ws/src
-            cp $HOME/robot_install/fix/ydlidar_ros $HOME/linorobot_ws/src
     fi
 
     if [[ "$BASE" == "ackermann" ]]
@@ -192,6 +203,9 @@ else
             sudo apt-get install -y ros-$ROSDISTRO-teb-local-planner
     fi
 fi
+
+cd $HOME/linorobot_ws/
+catkin_make
 
 cd $HOME/linorobot_ws/src
 git clone https://github.com/linorobot/linorobot.git
@@ -207,14 +221,13 @@ if [ "$TRAVIS_BRANCH" = "devel" ]; then git checkout devel; fi
 cd $HOME/linorobot_ws/src/linorobot/teensy/firmware
 export PLATFORMIO_CI_SRC=$PWD/src/firmware.ino
 platformio ci --project-conf=./platformio.ini --lib="./lib/ros_lib" --lib="./lib/config"  --lib="./lib/motor"  --lib="./lib/kinematics"  --lib="./lib/pid"  --lib="./lib/imu" --lib="./lib/encoder"
-cd $HOME
+
 echo "source $HOME/linorobot_ws/devel/setup.bash" >> $HOME/.bashrc
 echo "export LINOLIDAR=$SENSOR" >> $HOME/.bashrc
 echo "export LINOBASE=$BASE" >> $HOME/.bashrc
 source $HOME/.bashrc
 
 cd $HOME/linorobot_ws
-catkin_make --pkg lino_msgs
 catkin_make
 
 echo
