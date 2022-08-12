@@ -20,6 +20,22 @@ _  /_____/ /   _  /|  /  / /_/ / _  _, _/ / /_/ / _  /_/ / / /_/ / _  /
                     
                             http://linorobot.org                                                                          
 "
+echo
+echo "base The type of robot you want to build. Valid arguments are"
+echo " - 2wd"
+echo " - 4wd"
+echo " - ackermann"
+echo " - mecanum"
+echo "---------------------------------------------------------------"
+echo "The lidar you're going to use for your build. Valid arguments are"
+echo " - xv11"
+echo " - rplidar"
+echo " - ydlidar"
+echo " - ydlidarx2"
+echo " - hokuyo"
+echo " - kinect"
+echo " - realsense"
+echo
 if [ "$3" != "test" ]
     then
         if [ "$*" == "" ]
@@ -42,7 +58,7 @@ if [ "$3" != "test" ]
                 echo
                 exit 1
 
-        elif [[ "$2" != "xv11" && "$2" != "rplidar" && "$2" != "ydlidar" && "$2" != "hokuyo" && "$2" != "kinect" && "$2" != "realsense" ]]
+        elif [[ "$2" != "xv11" && "$2" != "rplidar" && "$2" != "ydlidar" && "$2" != "hokuyo" && "$2" != "kinect" && "$2" != "realsense"  && "$2" != "ydlidarx2"]]
             then
                 echo "Invalid linorobot sensor: $2"
                 echo
@@ -54,6 +70,7 @@ if [ "$3" != "test" ]
                 echo "rplidar"
                 echo "xv11"
                 echo "ydlidar"
+                echo "ydlidarx2"
                 echo
                 exit 1
         
@@ -87,8 +104,8 @@ python-dev \
 build-essential
 
 sudo apt-get install python-pip
-sudo python2.7 -m pip install -U platformio
-sudo rm -rf $HOME/.platformio/
+python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platformio/master/scripts/get-platformio.py)"
+ln -s ~/.platformio/penv/bin/platformio ~/.local/bin/platform
 
 source /opt/ros/$ROSDISTRO/setup.bash
 
@@ -196,6 +213,10 @@ else
         then
             cd $HOME/linorobot_ws/src
             git clone https://github.com/EAIBOT/ydlidar.git
+    elif [[ "$SENSOR" == "ydlidarx2" ]]
+        then
+            cd $HOME/linorobot_ws/src
+            cp $HOME/robot_install/fix/ydlidar_ros $HOME/linorobot_ws/src
     fi
 
     if [[ "$BASE" == "ackermann" ]]
@@ -221,7 +242,7 @@ if [ "$TRAVIS_BRANCH" = "devel" ]; then git checkout devel; fi
 cd $HOME/linorobot_ws/src/linorobot/teensy/firmware
 export PLATFORMIO_CI_SRC=$PWD/src/firmware.ino
 platformio ci --project-conf=./platformio.ini --lib="./lib/ros_lib" --lib="./lib/config"  --lib="./lib/motor"  --lib="./lib/kinematics"  --lib="./lib/pid"  --lib="./lib/imu" --lib="./lib/encoder"
-
+cd $HOME
 echo "source $HOME/linorobot_ws/devel/setup.bash" >> $HOME/.bashrc
 echo "export LINOLIDAR=$SENSOR" >> $HOME/.bashrc
 echo "export LINOBASE=$BASE" >> $HOME/.bashrc
