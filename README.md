@@ -102,8 +102,8 @@ python-setuptools \
 python-dev \
 build-essential
 
-sudo apt-get install python-pip
-sudo python2.7 -m pip install -U platformio
+#sudo apt-get install python-pip
+#sudo python2.7 -m pip install -U platformio
 sudo rm -rf $HOME/.platformio/
 
 source /opt/ros/$ROSDISTRO/setup.bash
@@ -255,3 +255,4 @@ echo
 $ cd $HOME/lino_install
 $ ./install.sh mecanum ydlidar
 ```
+file ydlidar X2 in fix
