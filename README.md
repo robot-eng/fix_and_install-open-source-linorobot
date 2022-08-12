@@ -266,5 +266,9 @@ echo
 $ cd $HOME/lino_install
 $ ./install.sh mecanum ydlidar
 ```
-file ydlidar is in folder fix
+file ydlidarx2 is in folder fix
+```
+roslaunch ydlidar_ros X2L.launch
+```
+pkg : change from ydlidar is ydlidar_ros
 
