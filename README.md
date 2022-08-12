@@ -20,8 +20,7 @@ set -e
 
 source /opt/ros/$(dir /opt/ros)/setup.bash
 
-wget https://www.pjrc.com/teensy/00-teensy.rules
-sudo cp 00-teensy.rules /etc/udev/rules.d/
+sudo cp files/49-teensy.rules /etc/udev/rules.d/
 
 ROSDISTRO="$(rosversion -d)"
 BASE=$1
@@ -101,12 +100,11 @@ avahi-daemon \
 openssh-server \
 python-setuptools \
 python-dev \
-build-essential \
-python-gudev
+build-essential
 
-sudo easy_install pip
-#sudo python2.7 -m pip install -U platformio
-#sudo rm -rf $HOME/.platformio/
+sudo apt-get install python-pip
+sudo python2.7 -m pip install -U platformio
+sudo rm -rf $HOME/.platformio/
 
 source /opt/ros/$ROSDISTRO/setup.bash
 
@@ -115,13 +113,26 @@ mkdir -p linorobot_ws/src
 cd $HOME/linorobot_ws/src
 catkin_init_workspace
 
+if [ $ROSDISTRO == "melodic" ]
+    then
+        git clone https://github.com/ros-perception/openslam_gmapping.git
+        
+else
+    sudo apt-get install -y \
+    python-gudev \
+    ros-$ROSDISTRO-gmapping \
+    ros-$ROSDISTRO-map-server
+fi
+
+cd $HOME/linorobot_ws/
+catkin_make
+source devel/setup.bash
+
 sudo apt-get install -y \
 ros-$ROSDISTRO-roslint \
 ros-$ROSDISTRO-rosserial \
 ros-$ROSDISTRO-rosserial-arduino \
 ros-$ROSDISTRO-imu-filter-madgwick \
-ros-$ROSDISTRO-gmapping \
-ros-$ROSDISTRO-map-server \
 ros-$ROSDISTRO-navigation \
 ros-$ROSDISTRO-robot-localization \
 ros-$ROSDISTRO-tf2 \
@@ -133,14 +144,23 @@ if [[ "$3" == "test" ]]
         ros-$ROSDISTRO-xv-11-laser-driver \
         ros-$ROSDISTRO-rplidar-ros \
         ros-$ROSDISTRO-urg-node \
-        ros-$ROSDISTRO-lms1xx \
-        ros-$ROSDISTRO-freenect-launch \
         ros-$ROSDISTRO-depthimage-to-laserscan \
         ros-$ROSDISTRO-teb-local-planner 
-
+#         ros-$ROSDISTRO-camera-info-manager \
+#         libusb-dev
+#         cd $HOME
+#         git clone https://github.com/OpenKinect/libfreenect.git    
+#         cd libfreenect    
+#         mkdir build   
+#         cd build    
+#         cmake -L ..    
+#         make
+#         sudo make install
+        
         cd $HOME/linorobot_ws/src
         git clone https://github.com/EAIBOT/ydlidar.git
-
+#         git clone https://github.com/ros-drivers/freenect_stack.git
+        git clone https://github.com/clearpathrobotics/lms1xx.git
 else
     if [[ "$SENSOR" == "hokuyo" ]]
         then
@@ -153,12 +173,23 @@ else
 
     elif [[ "$SENSOR" == "kinect" ]]
         then
-            sudo apt-get install -y ros-$ROSDISTRO-freenect-launch
-            sudo apt-get install -y ros-$ROSDISTRO-depthimage-to-laserscan
-            
+            cd $HOME/linorobot_ws/src
+            git clone https://github.com/ros-drivers/freenect_stack.git
+            sudo apt-get install -y \
+            ros-$ROSDISTRO-depthimage-to-laserscan \
+            ros-$ROSDISTRO-camera-info-manager     
+            git clone https://github.com/OpenKinect/libfreenect.git    
+            cd libfreenect    
+            mkdir build   
+            cd build    
+            cmake -L ..    
+            make
+            sudo make install
+          
     elif [[ "$SENSOR" == "lms1xx" ]]
         then
-            sudo apt-get install -y ros-$ROSDISTRO-lms1xx
+            cd $HOME/linorobot_ws/src
+            git clone https://github.com/clearpathrobotics/lms1xx.git
             echo ""
             echo -n "Input your LMS1xx IP: "
             read lms1xxip
@@ -189,6 +220,9 @@ else
     fi
 fi
 
+cd $HOME/linorobot_ws/
+catkin_make
+
 cd $HOME/linorobot_ws/src
 git clone https://github.com/linorobot/linorobot.git
 git clone https://github.com/linorobot/imu_calib.git
@@ -210,7 +244,6 @@ echo "export LINOBASE=$BASE" >> $HOME/.bashrc
 source $HOME/.bashrc
 
 cd $HOME/linorobot_ws
-catkin_make --pkg lino_msgs
 catkin_make
 
 echo
