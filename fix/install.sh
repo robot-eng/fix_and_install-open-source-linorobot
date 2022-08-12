@@ -21,6 +21,7 @@ _  /_____/ /   _  /|  /  / /_/ / _  _, _/ / /_/ / _  /_/ / / /_/ / _  /
                     
                             http://linorobot.org                                                                          
 "
+echo
 echo "base The type of robot you want to build. Valid arguments are"
 echo " - 2wd"
 echo " - 4wd"
@@ -34,6 +35,7 @@ echo " - ydlidar"
 echo " - hokuyo"
 echo " - kinect"
 echo " - realsense"
+echo
 if [ "$3" != "test" ]
     then
         if [ "$*" == "" ]
