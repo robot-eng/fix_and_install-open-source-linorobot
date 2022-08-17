@@ -107,15 +107,9 @@ python-setuptools \
 python-dev \
 build-essential
 
-<<<<<<< HEAD
-sudo apt-get install python-pip
-#sudo python2.7 -m pip install -U platformio
-#sudo rm -rf $HOME/.platformio/
-=======
 #sudo apt-get install python-pip
 #sudo python2.7 -m pip install -U platformio
 sudo rm -rf $HOME/.platformio/
->>>>>>> 405b4c2c85941b711492f75e6a32f3ecd3f5db1a
 
 source /opt/ros/$ROSDISTRO/setup.bash
 
